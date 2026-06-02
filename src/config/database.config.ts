@@ -9,6 +9,8 @@ type DatabaseType = 'better-sqlite3' | 'postgres';
  * - test: In-memory SQLite
  * - development: File-based SQLite at ./database directory
  * - production: PostgreSQL with URI and credentials
+ * @returns {TypeOrmModuleOptions} TypeORM configuration for the current environment
+ * @throws {Error} If NODE_ENV is unknown or required environment variables are missing in production
  */
 export function getDatabaseConfig(): TypeOrmModuleOptions {
   const env: string = (process.env.NODE_ENV || 'development') as Environment;
@@ -27,6 +29,7 @@ export function getDatabaseConfig(): TypeOrmModuleOptions {
 
 /**
  * Test environment: In-memory SQLite
+ * @returns {TypeOrmModuleOptions} TypeORM configuration for test environment
  */
 function getTestConfig(): TypeOrmModuleOptions {
   return {
@@ -41,6 +44,7 @@ function getTestConfig(): TypeOrmModuleOptions {
 
 /**
  * Development environment: File-based SQLite at ./database directory
+ * @returns {TypeOrmModuleOptions} TypeORM configuration for development environment
  */
 function getDevelopmentConfig(): TypeOrmModuleOptions {
   const dbPath: string = process.env.DB_PATH
@@ -59,6 +63,9 @@ function getDevelopmentConfig(): TypeOrmModuleOptions {
 
 /**
  * Production environment: PostgreSQL with URI and credentials
+ * @returns {TypeOrmModuleOptions} TypeORM configuration for production environment
+ * @throws {Error} If DB_URI or DB_PASSWORD is missing in production environment
+ * @throws {Error} if DB_PASSWORD is missing in production environment
  */
 function getProductionConfig(): TypeOrmModuleOptions {
   const dbUri: string | undefined = process.env.DB_URI;
