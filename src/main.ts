@@ -1,8 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import dotenv from 'dotenv';
 
-async function bootstrap() {
+dotenv.config();
+
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.error('Error starting the application:', error);
+  process.exit(1);
+});
