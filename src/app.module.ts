@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './config/database.module';
 import { APP_GUARD } from '@nestjs/core/constants';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -14,6 +15,9 @@ import { APP_GUARD } from '@nestjs/core/constants';
         limit: 10, // Maximum allowed requests inside the window
       },
     ]),
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes vars available everywhere automatically
+    }),
   ],
   controllers: [AppController],
   providers: [
