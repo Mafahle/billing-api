@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
 import dotenv from 'dotenv';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
 dotenv.config();
@@ -48,6 +48,9 @@ async function bootstrap(): Promise<void> {
       },
     }),
   );
+
+  // Automatically filters out non-whitelisted properties and enforces types
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
   console.log(
