@@ -37,19 +37,7 @@ async function bootstrap(): Promise<void> {
     origin: allowedOrigins,
   });
 
-  app.use(
-    helmet({
-      crossOriginEmbedderPolicy: false, // Disable COEP to allow embedding resources from other origins (e.g., Swagger UI assets)
-      contentSecurityPolicy: {
-        directives: {
-          imgSrc: [`'self'`, 'data:'], // Allow images from the same origin and data URIs
-          scriptSrc: [`'self'`], // Allow scripts only from the same origin
-          manifestSrc: [`'self'`], // Allow manifest files only from the same origin
-          frameSrc: [`'self'`], // Allow frames only from the same origin
-        },
-      },
-    }),
-  );
+  app.use(helmet());
 
   //Bind the document directly to Scalar instead of Swagger UI
   app.use(
