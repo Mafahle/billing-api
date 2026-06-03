@@ -1,5 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 type Environment = 'test' | 'development' | 'production';
 type DatabaseType = 'better-sqlite3' | 'postgres';
@@ -12,16 +13,19 @@ type DatabaseType = 'better-sqlite3' | 'postgres';
  * @returns {TypeOrmModuleOptions} TypeORM configuration for the current environment
  * @throws {Error} If NODE_ENV is unknown or required environment variables are missing in production
  */
-export function getDatabaseConfig(): TypeOrmModuleOptions {
-  const env: string = (process.env.NODE_ENV || 'development') as Environment;
+export function getDatabaseConfig(
+  configService: ConfigService,
+): TypeOrmModuleOptions {
+  const env: string = (configService.get<string>('NODE_ENV') ||
+    'development') as Environment;
 
   switch (env) {
     case 'test':
       return getTestConfig();
     case 'development':
-      return getDevelopmentConfig();
+      return getDevelopmentConfig(configService);
     case 'production':
-      return getProductionConfig();
+      return getProductionConfig(configService);
     default:
       throw new Error(`Unknown environment: ${env}`);
   }
@@ -35,7 +39,7 @@ function getTestConfig(): TypeOrmModuleOptions {
   return {
     type: 'better-sqlite3' as DatabaseType,
     database: ':memory:',
-    entities: [join(__dirname, '..', '**', '*.entity.ts')],
+    entities: [join(__dirname, '..', '**', '*.entity.ts')], // discover entities in src/entities
     migrations: [join(__dirname, '..', 'migrations', '*.ts')],
     synchronize: true,
     logging: false,
@@ -46,10 +50,12 @@ function getTestConfig(): TypeOrmModuleOptions {
  * Development environment: File-based SQLite at ./database directory
  * @returns {TypeOrmModuleOptions} TypeORM configuration for development environment
  */
-function getDevelopmentConfig(): TypeOrmModuleOptions {
-  const dbPath: string = process.env.DB_PATH
-    ? process.env.DB_PATH
-    : join(process.cwd(), 'database', 'data-dev.db');
+function getDevelopmentConfig(
+  configService: ConfigService,
+): TypeOrmModuleOptions {
+  const dbPath: string =
+    configService.get<string>('DB_PATH') ||
+    join(process.cwd(), 'database', 'data-dev.db');
 
   return {
     type: 'better-sqlite3' as DatabaseType,
@@ -67,9 +73,12 @@ function getDevelopmentConfig(): TypeOrmModuleOptions {
  * @throws {Error} If DB_URI or DB_PASSWORD is missing in production environment
  * @throws {Error} if DB_PASSWORD is missing in production environment
  */
-function getProductionConfig(): TypeOrmModuleOptions {
-  const dbUri: string | undefined = process.env.DB_URI;
-  const dbPassword: string | undefined = process.env.DB_PASSWORD;
+function getProductionConfig(
+  configService: ConfigService,
+): TypeOrmModuleOptions {
+  const dbUri: string | undefined = configService.get<string>('DB_URI');
+  const dbPassword: string | undefined =
+    configService.get<string>('DB_PASSWORD');
 
   if (!dbUri || dbUri.trim() === '') {
     throw new Error('DB_URI is required for production environment');

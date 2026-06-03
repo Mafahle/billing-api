@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
-import * dayjs from 'dayjs';
+import { ConfigService } from '@nestjs/config';
+import { dayjs } from '../utils/day-js.utils';
+
+const configService: ConfigService = new ConfigService();
 
 @Entity()
 export class User {
@@ -12,7 +15,10 @@ export class User {
   id: number; // Database generated
 
   // set default role to admin
-  @Column({ default: process.env.NODE_ENV !== 'production' ? 'admin' : 'user' })
+  @Column({
+    default:
+      configService.get<string>('NODE_ENV') !== 'production' ? 'admin' : 'user',
+  })
   role: 'admin' | 'user'; // Enum for user roles
 
   @Column()
@@ -27,7 +33,6 @@ export class User {
   @Column()
   password: string; // Hashed password
 
-  @CreateDateColumn()
-  createdAt: Date; // Database generated
-  // use datetime node package
+  @CreateDateColumn({ default: dayjs.valueOf() })
+  createdAt: number; // Timestamp of user creation
 }

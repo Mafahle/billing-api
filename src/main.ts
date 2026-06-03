@@ -2,11 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
-import dotenv from 'dotenv';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-
-dotenv.config();
 
 /**
  * Bootstrap the NestJS application
@@ -15,13 +13,15 @@ dotenv.config();
  * - Catches and logs any errors during startup, then exits with failure code
  * @returns {Promise<void>} A promise that resolves when the application has started successfully
  */
-
 async function bootstrap(): Promise<void> {
   const app: INestApplication<any> = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
-  const allowedOrigins: string[] = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['*']; // Default to allow all origins if not specified
+  const allowedOrigins: string[] = configService
+    .get<string>('ALLOWED_ORIGINS')
+    ?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? ['*'];
 
   // Use NestJS Swagger to build and generate the OpenAPI document structure
   const config = new DocumentBuilder()
@@ -52,9 +52,13 @@ async function bootstrap(): Promise<void> {
   // Automatically filters out non-whitelisted properties and enforces types
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
+  const port = Number(configService.get<string>('PORT') || 3000);
+  const nodeEnv = configService.get<string>('NODE_ENV');
+
+  await app.listen(port);
   console.log(
-    `Application is running on localhost:${process.env.PORT && process.env.NODE_ENV !== 'production' ? Number(process.env.PORT) : 3000}`,
+    `Application is running on localhost:${port}`,
+    nodeEnv !== 'production' ? `(${nodeEnv})` : '',
   );
 }
 
