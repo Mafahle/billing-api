@@ -39,9 +39,20 @@ export class UserService {
       }
       const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
 
+      // Determine user role based on email domain
+      const supportedDomains = this.configService
+        .get<string>('SUPPORTED_DOMAINS', '')
+        .split(',')
+        .map((domain) => domain.trim().toLowerCase());
+
+      const isAdminDomain = supportedDomains.includes(
+        signUpDto.email.split('@')[1],
+      );
+
       const user: User = this.userRepository.create({
         ...signUpDto,
         password: hashedPassword,
+        role: isAdminDomain ? 'admin' : 'customer',
       });
 
       await this.userRepository.save(user);
