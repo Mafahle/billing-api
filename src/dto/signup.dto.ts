@@ -3,19 +3,28 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SignUpDto {
   @IsString({ message: 'Name must be a valid string.' })
-  @ApiProperty({ description: 'The user\'s first name' })
+  @ApiProperty({
+    description: "The user's first name",
+    example: 'John',
+  })
   name: string; // Must be a valid email string
 
   @IsString({ message: 'Surname must be a valid string.' })
-  @ApiProperty({ description: 'The user\'s last name' })
+  @ApiProperty({ description: "The user's last name", example: 'Doe' })
   surname: string; // Must be a valid email string
 
   @IsEmail()
-  @ApiProperty({ description: 'The user\'s email address' })
+  @ApiProperty({
+    description: "The user's email address",
+    example: 'john.doe@example.com',
+  })
   email: string; // Must be a valid email string
 
   @IsString({ message: 'Password must be a valid string.' })
-  @ApiProperty({ description: 'The user\'s password' })
+  @ApiProperty({
+    description: "The user's password",
+    example: 'Password123!',
+  })
   @MinLength(7, { message: 'Password must be longer than 6 characters.' })
   @Matches(/[a-z]/, {
     message: 'Password must contain at least 1 lowercase letter.',
@@ -26,6 +35,9 @@ export class SignUpDto {
   @Matches(/[^a-zA-Z0-9]/, {
     message: 'Password must contain at least 1 special character.',
   })
-  @ApiProperty({ description: 'The user\'s password' })
+  @ApiProperty({
+    description: "The user's password",
+    example: 'Password123!',
+  })
   password: string; // Must be a string with at least 7 characters
 }
