@@ -17,20 +17,22 @@ export class User {
   // set default role to admin
   @Column({
     default:
-      configService.get<string>('NODE_ENV') !== 'production' ? 'admin' : 'user',
+      configService.get<string>('NODE_ENV') !== 'production'
+        ? 'admin'
+        : 'customer',
   })
-  role: 'admin' | 'user'; // Enum for user roles
+  role: 'admin' | 'customer'; // Enum for user roles
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   surname: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string; // Hashed password
 
   @CreateDateColumn({ default: dayjs.valueOf() })
