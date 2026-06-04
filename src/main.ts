@@ -33,18 +33,31 @@ async function bootstrap(): Promise<void> {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  app.enableCors({
-    origin: allowedOrigins,
-  });
-
-  app.use(helmet());
-
   //Bind the document directly to Scalar instead of Swagger UI
   app.use(
     '/docs', // The URL path where your documentation will be served
     apiReference({
       spec: {
         content: document,
+      },
+    }),
+  );
+
+  app.enableCors({
+    origin: allowedOrigins,
+  });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          connectSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],
+          styleSrc: ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:'],
+          objectSrc: ["'none'"],
+        },
       },
     }),
   );
