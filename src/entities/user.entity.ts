@@ -9,7 +9,7 @@ import { dayjs } from '../utils/day-js.utils';
 
 const configService: ConfigService = new ConfigService();
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number; // Database generated

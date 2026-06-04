@@ -39,7 +39,10 @@ function getTestConfig(): TypeOrmModuleOptions {
   return {
     type: 'better-sqlite3' as DatabaseType,
     database: ':memory:',
-    entities: [join(__dirname, '..', '**', '*.entity.ts')], // discover entities in src/entities
+    entities: [
+      join(__dirname, '..', '**', '*.entity.ts'),
+      join(__dirname, '..', '**', '*.entity.js'),
+    ], // discover entities in src/entities
     migrations: [join(__dirname, '..', 'migrations', '*.ts')],
     synchronize: true,
     logging: false,
@@ -60,7 +63,10 @@ function getDevelopmentConfig(
   return {
     type: 'better-sqlite3' as DatabaseType,
     database: dbPath,
-    entities: [join(__dirname, '..', '**', '*.entity.ts')],
+    entities: [
+      join(__dirname, '..', '**', '*.entity.ts'),
+      join(__dirname, '..', '**', '*.entity.js'),
+    ],
     migrations: [join(__dirname, '..', 'migrations', '*.ts')],
     synchronize: true,
     logging: true,
@@ -92,8 +98,10 @@ function getProductionConfig(
     type: 'postgres' as DatabaseType,
     url: dbUri,
     password: dbPassword,
-    entities: [join(__dirname, '..', '**', '*.entity.ts')],
-    migrations: [join(__dirname, '..', 'migrations', '*.ts')],
+    entities: [
+      /* ... */
+    ],
+    migrations: [join(__dirname, '..', 'migrations', '*.{ts,js}')],
     synchronize: false,
     logging: false,
     migrationsRun: true,
