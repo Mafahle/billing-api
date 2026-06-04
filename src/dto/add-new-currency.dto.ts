@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AddNewCurrencyDto {
@@ -13,6 +13,7 @@ export class AddNewCurrencyDto {
     description: 'The monthly fee in GBP',
     example: 1800,
   })
-  @IsNumber({ message: 'Monthly fee in GBP must be a valid number.' })
-  monthlyFeeGbpFee: number; // Must be a number
+  @IsNumber()
+  @Min(0, { message: 'Monthly fee in GBP must be a positive number.' })
+  monthlyFeeGbp: number; // Must be a number
 }

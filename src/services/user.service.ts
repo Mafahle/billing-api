@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SignUpDto } from 'src/dto/signup.dto';
 import * as bcrypt from 'bcrypt';
@@ -25,13 +30,12 @@ export class UserService {
    */
   async postSignUpUser(signUpDto: SignUpDto): Promise<any> {
     try {
-      // check if user already exists, hash the password, and save the user to the database
       const userExists = await this.userRepository.findOne({
         where: { email: signUpDto.email },
       });
 
       if (userExists) {
-        return { message: 'User already exists!' };
+        throw new ConflictException('User already exists!');
       }
       const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
 
@@ -41,11 +45,13 @@ export class UserService {
       });
 
       await this.userRepository.save(user);
-      // Here you would typically call a repository or database method to create the user
       return { message: 'User signed up successfully!' };
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       console.error('Error signing up user:', error);
-      return { message: 'Error signing up user!' };
+      throw new InternalServerErrorException('Error signing up user!');
     }
   }
 
@@ -58,29 +64,27 @@ export class UserService {
    */
   async postSignInUser(signInDto: SignInDto): Promise<any> {
     try {
-      // check if user exists, compare the password, and return a success message or token
       const user = await this.userRepository.findOne({
         where: { email: signInDto.email },
       });
 
       if (!user) {
-        return { message: 'User not found!' };
+        throw new UnauthorizedException('User not found!');
       }
 
       const isMatch = await bcrypt.compare(signInDto.password, user.password);
       if (!isMatch) {
-        return { message: 'Invalid credentials!' };
+        throw new UnauthorizedException('Invalid credentials!');
       }
 
       const jwtSecret = this.configService.get<string>('JWT_SECRET');
       if (!jwtSecret) {
-        throw new Error('JWT secret is not configured');
+        throw new InternalServerErrorException('JWT secret not configured');
       }
 
       const expiresIn = '1h';
       const expiresInSeconds = 60 * 60;
       const signOptions: jwt.SignOptions = { expiresIn };
-      // include user role in token payload for downstream authorization checks
       const accessToken = jwt.sign(
         { userId: user.id, role: (user as any).role },
         jwtSecret,
@@ -94,8 +98,14 @@ export class UserService {
         expires_in: expiresInSeconds,
       };
     } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error;
+      }
       console.error('Error signing in user:', error);
-      return { message: 'Error signing in user!' };
+      throw new InternalServerErrorException('Error signing in user!');
     }
   }
 }

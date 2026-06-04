@@ -35,7 +35,7 @@
     "better-sqlite3": "^12.10.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "country-to-currency": "^2.0.3",
+    "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.21",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",

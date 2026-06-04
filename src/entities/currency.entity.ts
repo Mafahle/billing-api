@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { dayjs } from '../utils/day-js.utils';
+import { Min } from 'class-validator';
 
 @Entity('currencies')
 export class Currency {
@@ -12,13 +13,11 @@ export class Currency {
   id: number; // Database generated
 
   @Column({ unique: true, nullable: true })
-  symbol: string; // Currency symbol
-
-  @Column({ unique: true, nullable: true })
-  country: string;
+  currency: string; // Currency symbol
 
   @Column({ nullable: true })
-  baseAccountFee: string;
+  @Min(0, { message: 'Monthly fee in GBP must be a positive number.' })
+  monthlyFeeGbp: number; // Monthly fee in GBP
 
   @CreateDateColumn({ default: dayjs.valueOf() })
   createdAt: number; // Timestamp of user creation
