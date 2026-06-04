@@ -14,6 +14,19 @@ export interface AuthenticatedRequest extends Request {
   user?: { id: number; role?: string };
 }
 
+export function verifyAuthToken(
+  token: string,
+  configService: ConfigService,
+): { id: number; role?: string } {
+  const secret = configService.get<string>('JWT_SECRET');
+  if (!secret) {
+    throw new Error('JWT secret not configured');
+  }
+
+  const payload = jwt.verify(token, secret) as AuthPayload;
+  return { id: payload.userId, role: payload.role };
+}
+
 @Injectable()
 export class UserAuthMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
@@ -41,15 +54,8 @@ export class UserAuthMiddleware implements NestMiddleware {
     }
 
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
-      if (!secret) {
-        console.error('JWT secret not configured');
-        return res.status(500).json({ message: 'Server misconfiguration' });
-      }
-
-      const payload = jwt.verify(token, secret) as AuthPayload;
-
-      req.user = { id: payload.userId, role: payload.role };
+      const payload = verifyAuthToken(token, this.configService);
+      req.user = payload;
       return next();
     } catch (err) {
       console.error('JWT verification failed:', err);
