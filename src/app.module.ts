@@ -9,6 +9,8 @@ import { UserController } from './controllers/user.controller';
 import { UserService } from './services/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { AuthGuard } from './guards/auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { User } from './entities/user.entity';
   providers: [
     AppService,
     UserService,
+    AuthGuard,
+    RolesGuard,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard, // Automatically protects all application endpoints
