@@ -36,6 +36,8 @@ export class CurrenciesController {
   @ApiOperation({ summary: 'Add a new currency' })
   @ApiResponse({ status: 201, description: 'Currency created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   addNewCurrency(@Body() addNewCurrencyDto: AddNewCurrencyDto): Promise<any> {
     // Check if currency provided in addNewCurrencyDto is available in currency-symbol-map package.
     const currencySymbol = getCurrencySymbol(addNewCurrencyDto.currency);
