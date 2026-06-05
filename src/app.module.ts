@@ -15,11 +15,14 @@ import { RolesGuard } from './guards/roles.guard';
 import { CurrenciesService } from './services/currencies.service';
 import { CurrenciesController } from './controllers/currencies.controller';
 import { AccountRequest } from './entities/account-requests.entity';
+import { Account } from './entities/account.entity';
+import { AccountsService } from './services/account.service';
+import { AccountsController } from './controllers/account.controller';
 
 @Module({
   imports: [
     DatabaseModule,
-    TypeOrmModule.forFeature([User, Currency, AccountRequest]),
+    TypeOrmModule.forFeature([User, Currency, AccountRequest, Account]),
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // Time window window in milliseconds (e.g., 60 seconds)
@@ -30,11 +33,17 @@ import { AccountRequest } from './entities/account-requests.entity';
       isGlobal: true, // Makes vars available everywhere automatically
     }),
   ],
-  controllers: [AppController, UserController, CurrenciesController],
+  controllers: [
+    AppController,
+    UserController,
+    CurrenciesController,
+    AccountsController,
+  ],
   providers: [
     AppService,
     UserService,
     CurrenciesService,
+    AccountsService,
     AuthGuard,
     RolesGuard,
     {
