@@ -23,16 +23,16 @@ export class User {
   })
   role: 'admin' | 'customer'; // Enum for user roles
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   surname: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: false })
   email: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   password: string; // Hashed password
 
   @CreateDateColumn({ default: dayjs.valueOf() })

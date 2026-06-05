@@ -14,11 +14,12 @@ import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { CurrenciesService } from './services/currencies.service';
 import { CurrenciesController } from './controllers/currencies.controller';
+import { AccountRequest } from './entities/account-requests.entity';
 
 @Module({
   imports: [
     DatabaseModule,
-    TypeOrmModule.forFeature([User, Currency]),
+    TypeOrmModule.forFeature([User, Currency, AccountRequest]),
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // Time window window in milliseconds (e.g., 60 seconds)

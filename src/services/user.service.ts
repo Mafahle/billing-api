@@ -12,12 +12,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { SignInDto } from 'src/dto/signin.dto';
+import { NewAccountRequestDto } from 'src/dto/new-account-request.dto';
+import { AccountRequest } from 'src/entities/account-requests.entity';
+import { Currency } from 'src/entities/currency.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(AccountRequest)
+    private readonly newAccountRequestRepository: Repository<AccountRequest>,
+    @InjectRepository(Currency)
+    private readonly currencyRepository: Repository<Currency>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -104,10 +111,73 @@ export class UserService {
 
       return {
         message: 'User signed in successfully!',
-        access_token: accessToken,
-        token_type: 'Bearer',
-        expires_in: expiresInSeconds,
+        accessToken: accessToken,
+        tokenType: 'Bearer',
+        expiresIn: expiresInSeconds,
       };
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error;
+      }
+      console.error('Error signing in user:', error);
+      throw new InternalServerErrorException('Error signing in user!');
+    }
+  }
+
+  async postNewAccountRequest(
+    newAccountRequestDto: NewAccountRequestDto,
+    userId: number | undefined,
+  ): Promise<any> {
+    try {
+      // Validate currency exists
+      const currencyInDB = await this.currencyRepository.findOne({
+        where: { currency: newAccountRequestDto.currency },
+      });
+      if (!currencyInDB) {
+        throw new InternalServerErrorException('Currency not supported!');
+      }
+
+      // Create the account request within a transaction to safely compute queueNumber
+      const result = await this.newAccountRequestRepository.manager.transaction(
+        async (manager) => {
+          // Ensure no duplicate request for the same user+currency
+          const existing = await manager.findOne(AccountRequest, {
+            where: { userId: userId, currency: newAccountRequestDto.currency },
+          });
+          if (existing) {
+            throw new ConflictException('NewAccountRequest already exists!!');
+          }
+
+          // Compute next queue number (max + 1)
+          const raw = await manager
+            .createQueryBuilder(AccountRequest, 'ar')
+            .select('MAX(ar.queueNumber)', 'max')
+            .getRawOne();
+
+          const maxQueue = raw && raw.max ? Number(raw.max) : 0;
+          const nextQueue = maxQueue + 1;
+
+          const newAccountRequest: AccountRequest = manager.create(
+            AccountRequest,
+            {
+              ...newAccountRequestDto,
+              userId: userId,
+              queueNumber: nextQueue,
+            },
+          );
+
+          await manager.save(newAccountRequest);
+          return {
+            message: 'NewAccountRequest created successfully!',
+            id: newAccountRequest.id,
+          };
+        },
+      );
+
+      return result;
     } catch (error) {
       if (
         error instanceof UnauthorizedException ||
