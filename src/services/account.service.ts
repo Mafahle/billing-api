@@ -43,6 +43,7 @@ export class AccountsService {
         throw new BadRequestException('Invalid accountId format!');
       }
 
+      const currency = parsedAccount[2];
       const clientId = parsedAccount[3];
       const requestId = parsedAccount[4];
 
@@ -65,7 +66,10 @@ export class AccountsService {
       }
 
       // Verify currency matches between DTO and account request
-      if (createNewAccountDto.currency !== accountRequest.currency) {
+      if (
+        createNewAccountDto.currency !== accountRequest.currency ||
+        currency !== accountRequest.currency
+      ) {
         throw new BadRequestException(
           'Currency in accountId does not match the currency in account request!',
         );
