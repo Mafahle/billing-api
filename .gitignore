@@ -399,3 +399,5 @@ dist
 .webpack
 .serverless/**/*.zip
 database
+.claude/
+.claudeignore

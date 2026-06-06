@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateNewAccountDto {
   @ApiProperty({
     description: 'The accountId',
-    example: 'EUR-ITA-CHF-14-3',
+    example: 'NOVO-DEN-14-3',
   })
   @IsString({ message: 'AccountId must be a valid string.' })
   accountId: string;

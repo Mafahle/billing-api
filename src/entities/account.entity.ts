@@ -12,7 +12,7 @@ export class Account {
   id: number; // Database generated
 
   @Column({ unique: true, nullable: false })
-  accountId: string; // EUR-ITA-CHF-3-1 (Continent-Country-Currency-UserId-AccountRequestId)
+  accountId: string; // EUR-DEN-CHF-3-1 (businessShortName-Country-UserId-AccountRequestId)
 
   @Column({ nullable: false })
   currency: string; // Currency for the account request

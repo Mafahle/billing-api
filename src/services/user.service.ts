@@ -104,7 +104,7 @@ export class UserService {
       const expiresInSeconds = 60 * 60;
       const signOptions: jwt.SignOptions = { expiresIn };
       const accessToken = jwt.sign(
-        { userId: user.id, role: (user as any).role },
+        { userId: user.id, role: user.role },
         jwtSecret,
         signOptions,
       );
@@ -155,9 +155,9 @@ export class UserService {
           const raw = await manager
             .createQueryBuilder(AccountRequest, 'ar')
             .select('MAX(ar.queueNumber)', 'max')
-            .getRawOne();
+            .getRawOne<{ max: string | null }>();
 
-          const maxQueue = raw && raw.max ? Number(raw.max) : 0;
+          const maxQueue = raw?.max ? Number(raw.max) : 0;
           const nextQueue = maxQueue + 1;
 
           const newAccountRequest: AccountRequest = manager.create(

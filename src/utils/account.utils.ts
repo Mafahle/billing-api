@@ -1,8 +1,7 @@
 /**
- * Account ID Format: EUR-ITA-CHF-3-1
- * EUR - Continent of residence (string)
- * ITA - Country of residence (string)
- * CHF - Currency account type (string)
+ * Account ID Format: EUR-DEN-CHF-3-1
+ * NOVO - Business short name e.g NOVO for Novo Nordisk (string)
+ * DEN - Country of residence (string)
  * 3 - ClientId (number)
  * 1 - New Account Request id (number)
  */
@@ -19,15 +18,15 @@ export function validateAccountId(accountId: string): boolean {
 
   const parts = accountId.split('-');
 
-  // Must have exactly 5 parts
-  if (parts.length !== 5) {
+  // Must have exactly 4 parts
+  if (parts.length !== 4) {
     return false;
   }
 
-  const [continent, country, currency, clientId, requestId] = parts;
+  const [businessShortName, country, clientId, requestId] = parts;
 
-  // Continent, country, and currency must be non-empty strings
-  if (!continent || !country || !currency) {
+  // businessShortName, country, and currency must be non-empty strings
+  if (!businessShortName || !country) {
     return false;
   }
 
@@ -52,17 +51,17 @@ export function validateAccountId(accountId: string): boolean {
 /**
  * Parses accountId and returns an array with the last two elements formatted as numbers.
  * @param accountId - The account ID string to parse
- * @returns Array [continent, country, currency, clientId, requestId] or null if invalid
+ * @returns Array [businessShortName, country, currency, clientId, requestId] or null if invalid
  */
 export function parseAccountId(
   accountId: string,
-): [string, string, string, number, number] | null {
+): [string, string, number, number] | null {
   if (!validateAccountId(accountId)) {
     return null;
   }
 
   const parts = accountId.split('-');
-  const [continent, country, currency, clientId, requestId] = parts;
+  const [businessShortName, country, clientId, requestId] = parts;
 
-  return [continent, country, currency, Number(clientId), Number(requestId)];
+  return [businessShortName, country, Number(clientId), Number(requestId)];
 }

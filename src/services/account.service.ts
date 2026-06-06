@@ -37,41 +37,37 @@ export class AccountsService {
     createNewAccountDto: CreateNewAccountDto,
   ): Promise<any> {
     try {
-      // Parse accountId to get [continent, country, currency, clientId, requestId]
+      // Parse accountId to get [businessShortName, country, currency, userId, requestId]
       const parsedAccount = parseAccountId(createNewAccountDto.accountId);
       if (!parsedAccount) {
         throw new BadRequestException('Invalid accountId format!');
       }
 
-      const currency = parsedAccount[2];
-      const clientId = parsedAccount[3];
-      const requestId = parsedAccount[4];
-
-      // Check if user (clientId) exists
-      const user = await this.userRepository.findOne({
-        where: { id: clientId },
-      });
-      if (!user) {
-        throw new NotFoundException(`User with ID ${clientId} not found!`);
-      }
+      const userId = parsedAccount[2];
+      const requestId = parsedAccount[3];
 
       // Check if account request (requestId) exists
       const accountRequest = await this.accountRequestRepository.findOne({
-        where: { id: requestId },
+        where: { id: requestId, userId: userId },
       });
+
       if (!accountRequest) {
-        throw new NotFoundException(
-          `Account request with ID ${requestId} not found!`,
+        throw new BadRequestException(
+          'Account request with requestId ${requestId} or userId ${userId} not found!',
         );
       }
 
       // Verify currency matches between DTO and account request
-      if (
-        createNewAccountDto.currency !== accountRequest.currency ||
-        currency !== accountRequest.currency
-      ) {
+      if (createNewAccountDto.currency !== accountRequest.currency) {
         throw new BadRequestException(
           'Currency in accountId does not match the currency in account request!',
+        );
+      }
+
+      // Check if an approved account request already exists for this user and currency
+      if (accountRequest.status == 'approved') {
+        throw new BadRequestException(
+          `An account with currency ${createNewAccountDto.currency} already exists for this user!`,
         );
       }
 
