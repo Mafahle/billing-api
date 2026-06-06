@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  Generated,
 } from 'typeorm';
 import { dayjs } from '../utils/day-js.utils';
 
