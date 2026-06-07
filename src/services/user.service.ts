@@ -132,6 +132,10 @@ export class UserService {
     userId: number | undefined,
   ): Promise<any> {
     try {
+      if (!userId) {
+        throw new UnauthorizedException('User not authenticated!');
+      }
+
       // Validate currency exists
       const currencyInDB = await this.currencyRepository.findOne({
         where: { currency: newAccountRequestDto.currency },
@@ -181,12 +185,13 @@ export class UserService {
     } catch (error) {
       if (
         error instanceof UnauthorizedException ||
+        error instanceof ConflictException ||
         error instanceof InternalServerErrorException
       ) {
         throw error;
       }
-      console.error('Error signing in user:', error);
-      throw new InternalServerErrorException('Error signing in user!');
+      console.error('Error creating account request:', error);
+      throw new InternalServerErrorException('Error creating account request!');
     }
   }
 }

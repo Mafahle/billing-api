@@ -32,11 +32,11 @@ export class AccountsService {
   ) {}
 
   /**
-   * Adds a new currency with the provided details.
-   * @param {CreateNewAccountDto} createNewAccountDto - The data for the new account
-   * @returns {Promise<any>} A message indicating success or failure of the operation
-   * @description This creates a new account if new account request was submitted by client before
-   * @throws {Error} If any error occurs during the operation
+   * Creates a new account for a client based on a prior approved account request.
+   * @param {CreateNewAccountDto} createNewAccountDto - Account details including accountId, currency, transactionThreshold, discountedDays, and discountedRate
+   * @returns {Promise<{ message: string; accountId: string; id: number }>} Confirmation with the created account identifiers
+   * @throws {BadRequestException} If accountId format is invalid, currency mismatches, or the request is already approved
+   * @throws {InternalServerErrorException} If an unexpected error occurs
    */
   async postCreateNewAccount(
     createNewAccountDto: CreateNewAccountDto,
@@ -160,36 +160,43 @@ export class AccountsService {
         accountInDB.discountedDays,
       );
 
-      const transactionCountThreshold: number = Number(
-        this.configService.get('TRANSACTION_COUNT_THRESHOLD'),
-      );
-
-      // calucalte access fee (threshold)
+      // calculate excess transaction fee using the per-account threshold
       let transactionFeeGbp: number;
       if (
-        calculateAccountBillDto.transactionCount > transactionCountThreshold
+        calculateAccountBillDto.transactionCount >
+        accountInDB.transactionThreshold
       ) {
         transactionFeeGbp =
           (calculateAccountBillDto.transactionCount -
-            transactionCountThreshold) *
+            accountInDB.transactionThreshold) *
           Number(this.configService.get('FIXED_TRANSACTION_FEE'));
       } else {
         transactionFeeGbp = 0;
       }
 
-      const baseFeeDiscount =
-        basePeriodFeeGbp.totalBeforeDiscount -
-        basePeriodFeeGbp.totalOwedWithDiscount;
+      const grossTotalGbp = Number(
+        (basePeriodFeeGbp.totalBeforeDiscount + transactionFeeGbp).toFixed(2),
+      );
 
-      const totalFeesGbp = Number(
+      const totalAmountGbp = Number(
         (basePeriodFeeGbp.totalOwedWithDiscount + transactionFeeGbp).toFixed(2),
       );
 
+      const discountDetails =
+        basePeriodFeeGbp.totalSaved > 0
+          ? `${accountInDB.discountedRate}% off applied`
+          : 'No discount applied';
+
       return {
-        totalBaseFee: basePeriodFeeGbp.totalBeforeDiscount,
-        baseFeeDiscount: -baseFeeDiscount,
-        totalTransactionFeeGbp: transactionFeeGbp,
-        totalFeesGbp: totalFeesGbp,
+        accountId,
+        totalAmountGbp,
+        breakdown: {
+          baseFeeGbp: basePeriodFeeGbp.totalBeforeDiscount,
+          transactionFeesGbp: transactionFeeGbp,
+          grossTotalGbp,
+          discountAppliedGbp: basePeriodFeeGbp.totalSaved,
+          discountDetails,
+        },
       };
     } catch (error) {
       if (

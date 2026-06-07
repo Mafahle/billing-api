@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { dayjs } from '../utils/day-js.utils';
 
 @Entity('account_requests')
+@Unique(['userId', 'currency'])
 export class AccountRequest {
   @PrimaryGeneratedColumn()
   id: number; // Database generated

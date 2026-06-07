@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DatabaseModule } from './config/database.module';
 import { APP_GUARD } from '@nestjs/core/constants';
 import { ConfigModule } from '@nestjs/config';
@@ -33,14 +31,8 @@ import { AccountsController } from './controllers/account.controller';
       isGlobal: true, // Makes vars available everywhere automatically
     }),
   ],
-  controllers: [
-    AppController,
-    UserController,
-    CurrenciesController,
-    AccountsController,
-  ],
+  controllers: [UserController, CurrenciesController, AccountsController],
   providers: [
-    AppService,
     UserService,
     CurrenciesService,
     AccountsService,

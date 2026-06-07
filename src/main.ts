@@ -40,6 +40,14 @@ async function bootstrap(): Promise<void> {
       spec: {
         content: document,
       },
+      authentication: {
+        preferredSecurityScheme: 'bearer',
+        securitySchemes: {
+          bearer: {
+            token: '',
+          },
+        },
+      },
     }),
   );
 

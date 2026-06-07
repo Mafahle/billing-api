@@ -10,7 +10,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AddNewCurrencyDto } from 'src/dto/add-new-currency.dto';
 import { Roles } from 'src/common/roles.decorator';
@@ -27,11 +27,7 @@ export class CurrenciesController {
   @Post('')
   @Roles('admin') // Only admin can add new currencies
   @UseGuards(AuthGuard, RolesGuard) // Ensure user is authenticated and has the admin role
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token for authentication',
-    required: true,
-  })
+  @ApiBearerAuth()
   @ApiBody({ type: AddNewCurrencyDto })
   @ApiOperation({ summary: 'Add a new currency' })
   @ApiResponse({ status: 201, description: 'Currency created successfully' })

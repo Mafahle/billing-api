@@ -14,7 +14,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { SignInDto } from 'src/dto/signin.dto';
 import { NewAccountRequestDto } from 'src/dto/new-account-request.dto';
@@ -55,11 +55,7 @@ export class UserController {
   @Post('new-account-request')
   @Roles('customer')
   @UseGuards(AuthGuard, RolesGuard) // Ensure user is authenticated and has the customer role
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token for authentication',
-    required: true,
-  })
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request a new account' })
   @ApiResponse({

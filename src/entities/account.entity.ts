@@ -12,10 +12,13 @@ export class Account {
   id: number; // Database generated
 
   @Column({ unique: true, nullable: false })
-  accountId: string; // EUR-DEN-CHF-3-1 (businessShortName-Country-UserId-AccountRequestId)
+  accountId: string; // NOVO-DEN-3-1 (businessShortName-Country-UserId-AccountRequestId)
 
   @Column({ nullable: false })
   currency: string; // Currency for the account request
+
+  @Column({ nullable: false, default: 0 })
+  transactionThreshold: number; // Max free transactions per billing period
 
   @Column({ nullable: false })
   discountedDays: number;

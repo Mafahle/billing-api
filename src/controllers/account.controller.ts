@@ -11,7 +11,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Roles } from 'src/common/roles.decorator';
 import { RolesGuard } from 'src/guards/roles.guard';
@@ -29,11 +29,7 @@ export class AccountsController {
   @Post('')
   @Roles('admin') // Only admin can add new currencies
   @UseGuards(AuthGuard, RolesGuard) // Ensure user is authenticated and has the admin role
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token for authentication',
-    required: true,
-  })
+  @ApiBearerAuth()
   @ApiBody({ type: CreateNewAccountDto })
   @ApiOperation({ summary: 'Create new account' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })
@@ -56,11 +52,7 @@ export class AccountsController {
   @Post('/:accountId/bill')
   @Roles('admin') // Only admin can add new currencies
   @UseGuards(AuthGuard, RolesGuard) // Ensure user is authenticated and has the admin role
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token for authentication',
-    required: true,
-  })
+  @ApiBearerAuth()
   @ApiBody({ type: CalculateAccountBillDto })
   @ApiOperation({ summary: 'Calculate account bill' })
   @ApiResponse({ status: 201, description: 'Account created successfully' })

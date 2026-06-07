@@ -17,6 +17,14 @@ export class CreateNewAccountDto {
   currency: string;
 
   @ApiProperty({
+    description: 'Max free transactions per billing period e.g 100',
+    example: 100,
+  })
+  @IsNumber({}, { message: 'transactionThreshold must be a valid number.' })
+  @Min(1, { message: 'transactionThreshold must be at least 1.' })
+  transactionThreshold!: number;
+
+  @ApiProperty({
     description: 'The number of discounted days on new accounts e.g 7, 10, 30',
     example: 7,
   })
