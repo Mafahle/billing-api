@@ -135,7 +135,7 @@ export class AccountsService {
 
       const billingPeriodStart = dayjs
         .utc(calculateAccountBillDto.billingPeriodStart)
-        .unix();
+        .valueOf();
 
       // verify if start date is greater or equals to the date when the account
       if (billingPeriodStart < accountInDB.createdAt) {
@@ -181,9 +181,9 @@ export class AccountsService {
         basePeriodFeeGbp.totalBeforeDiscount -
         basePeriodFeeGbp.totalOwedWithDiscount;
 
-      const totalFeesGbp = (
-        basePeriodFeeGbp.totalOwedWithDiscount + transactionFeeGbp
-      ).toFixed(2);
+      const totalFeesGbp = Number(
+        (basePeriodFeeGbp.totalOwedWithDiscount + transactionFeeGbp).toFixed(2),
+      );
 
       return {
         totalBaseFee: basePeriodFeeGbp.totalBeforeDiscount,

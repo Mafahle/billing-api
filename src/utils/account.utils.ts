@@ -96,12 +96,12 @@ export function calculateCustomBaseFee(
   const end = dayjs.utc(endDateIso).endOf('day');
 
   // Establish the boundaries of the discount block using the billing start date
-  const discStartUnix = start.unix();
+  const discStartUnix = start.valueOf();
   // Subtract 1 because day one of the billing cycle counts as the first discounted day
   const discEndUnix = start
     .add(discountedDays - 1, 'day')
     .endOf('day')
-    .unix();
+    .valueOf();
 
   const totalBillingDays = end.diff(start, 'day') + 1;
 
@@ -117,7 +117,7 @@ export function calculateCustomBaseFee(
     // Track standard cost regardless of promotion status
     totalBeforeDiscount += baseDailyRate;
 
-    const currentDayUnix = rollingDate.unix();
+    const currentDayUnix = rollingDate.valueOf();
 
     // Check if the current day falls inclusively inside the active discount range
     if (currentDayUnix >= discStartUnix && currentDayUnix <= discEndUnix) {
