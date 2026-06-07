@@ -77,13 +77,15 @@ export interface BillingBreakdown {
 
 /**
  * Calculates custom period fees, returning a detailed breakdown of costs and savings.
- * The continuous discount block automatically triggers at the start of the billing period.
+ * The discount window is anchored to the account creation date, not the billing period start.
+ * Days in the billing period that fall outside the discount window are billed at full rate.
  *
- * @param {startDateIso} ISO string of the billing start date (e.g., '2026-03-31')
- * @param {endDateIso} ISO string of the billing end date (e.g., '2026-09-10')
+ * @param {startDateIso} ISO string of the billing start date (e.g., '2026-07-01')
+ * @param {endDateIso} ISO string of the billing end date (e.g., '2026-07-31')
  * @param {monthlyBaseFee} The standard flat monthly fee amount
  * @param {discountRate} The percentage discount to apply (e.g., 20 for a 20% discount)
- * @param {discountedDays} The total number of continuous discount days starting from day one (e.g., 10)
+ * @param {discountedDays} The total number of continuous discount days from account creation (e.g., 7)
+ * @param {number} accountCreatedAtMs Unix timestamp (ms) of the account creation date
  */
 export function calculateCustomBaseFee(
   startDateIso: string,
@@ -91,15 +93,17 @@ export function calculateCustomBaseFee(
   monthlyBaseFee: number,
   discountRate: number,
   discountedDays: number,
+  accountCreatedAtMs: number,
 ): BillingBreakdown {
   const start = dayjs.utc(startDateIso).startOf('day');
   const end = dayjs.utc(endDateIso).endOf('day');
 
-  // Establish the boundaries of the discount block using the billing start date
-  const discStartUnix = start.valueOf();
-  // Subtract 1 because day one of the billing cycle counts as the first discounted day
-  const discEndUnix = start
-    .add(discountedDays - 1, 'day')
+  // Discount window starts the day after account creation (creation day is excluded from billing).
+  // e.g. created 2026-06-07 with 7 discountedDays → window is 2026-06-08 to 2026-06-14 (inclusive).
+  const creationDay = dayjs.utc(accountCreatedAtMs).startOf('day');
+  const discStartUnix = creationDay.add(1, 'day').valueOf();
+  const discEndUnix = creationDay
+    .add(discountedDays, 'day')
     .endOf('day')
     .valueOf();
 

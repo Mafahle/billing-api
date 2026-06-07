@@ -158,6 +158,7 @@ export class AccountsService {
         currencyInDB.monthlyFeeGbp,
         accountInDB.discountedRate,
         accountInDB.discountedDays,
+        accountInDB.createdAt,
       );
 
       // calculate excess transaction fee using the per-account threshold
