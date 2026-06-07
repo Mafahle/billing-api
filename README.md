@@ -27,6 +27,7 @@ A NestJS/TypeScript service that handles dynamic, per-account billing for BCB BL
     - [Discount window](#discount-window)
     - [Transaction fee](#transaction-fee)
   - [Running the Application](#running-the-application)
+  - [Docker](#docker)
   - [API Documentation](#api-documentation)
   - [Tests](#tests)
   - [Deployment](#deployment)
@@ -342,6 +343,69 @@ npm run start:prod
 ```
 
 The server starts on `PORT` (default `3000`). All API routes are available under `http://localhost:3000`.
+
+---
+
+## Docker
+
+The included `Dockerfile` runs the API in **development mode** (hot-reload enabled) on port `3001` by default.
+
+**Build the image**
+
+```bash
+docker build -t billing-api .
+```
+
+**Run the container**
+
+Pass your `.env` file at runtime so credentials are never baked into the image:
+
+```bash
+docker run -p 3001:3001 --env-file .env billing-api
+```
+
+The API is then available at `http://localhost:3001` and the Scalar docs at `http://localhost:3001/docs`.
+
+**Run with hot-reload (bind-mount source)**
+
+Mount `src/` so the container picks up local file changes without a rebuild:
+
+```bash
+# macOS / Linux
+docker run -p 3001:3001 --env-file .env -v $(pwd)/src:/app/src billing-api
+
+# Windows PowerShell
+docker run -p 3001:3001 --env-file .env -v ${PWD}/src:/app/src billing-api
+```
+
+> `CHOKIDAR_USEPOLLING=true` is set in the Dockerfile so file-watch events propagate correctly through the volume mount on all platforms.
+
+**Override the port**
+
+```bash
+docker run -p 4000:4000 --env-file .env -e PORT=4000 billing-api
+```
+
+**Deploy the container**
+
+For a production image, build from the same Dockerfile but pass production environment variables pointing at your PostgreSQL instance:
+
+```bash
+docker build -t billing-api:prod .
+
+docker run -d \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e DB_URI=postgresql://user:pass@host:5432/billing_db \
+  -e DB_PASSWORD=your_secure_password \
+  -e JWT_SECRET=your_long_random_secret \
+  -e SUPPORTED_DOMAINS=bcbgroup.io,bcbgroup.com \
+  -e FIXED_TRANSACTION_FEE=0.50 \
+  billing-api:prod
+```
+
+> In production mode TypeORM has `synchronize: false`. Ensure your database schema is migrated before starting the container.
 
 ---
 

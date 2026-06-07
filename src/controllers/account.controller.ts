@@ -50,7 +50,7 @@ export class AccountsController {
   }
 
   @Post('/:accountId/bill')
-  @Roles('admin') // Only admin can add new currencies
+  @Roles('admin') // only admin can calculate bill
   @UseGuards(AuthGuard, RolesGuard) // Ensure user is authenticated and has the admin role
   @ApiBearerAuth()
   @ApiBody({ type: CalculateAccountBillDto })
