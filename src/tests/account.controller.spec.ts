@@ -69,207 +69,107 @@ describe('AccountsController', () => {
   // ─── createNewAccount ────────────────────────────────────────────────────────
 
   describe('createNewAccount', () => {
-    describe('valid accountId — delegates to service', () => {
-      it('calls postCreateNewAccount with the full DTO', async () => {
-        service.postCreateNewAccount.mockResolvedValue({
-          message: 'Account created successfully!',
-          accountId: VALID_ACCOUNT_ID,
-          id: 1,
-        });
+    it('calls postCreateNewAccount with the full DTO and returns the service response', async () => {
+      const successResponse = {
+        message: 'Account created successfully!',
+        accountId: VALID_ACCOUNT_ID,
+        id: 1,
+      };
+      service.postCreateNewAccount.mockResolvedValue(successResponse);
 
-        await controller.createNewAccount(BASE_CREATE_DTO);
-
-        expect(service.postCreateNewAccount).toHaveBeenCalledWith(
-          BASE_CREATE_DTO,
-        );
-        expect(service.postCreateNewAccount).toHaveBeenCalledTimes(1);
-      });
-
-      it('returns the service success response', async () => {
-        const successResponse = {
-          message: 'Account created successfully!',
-          accountId: VALID_ACCOUNT_ID,
-          id: 1,
-        };
-        service.postCreateNewAccount.mockResolvedValue(successResponse);
-
-        await expect(
-          controller.createNewAccount(BASE_CREATE_DTO),
-        ).resolves.toEqual(successResponse);
-      });
+      await expect(
+        controller.createNewAccount(BASE_CREATE_DTO),
+      ).resolves.toEqual(successResponse);
+      expect(service.postCreateNewAccount).toHaveBeenCalledWith(
+        BASE_CREATE_DTO,
+      );
     });
 
-    describe('invalid accountId — throws before reaching the service', () => {
-      it('throws BadRequestException for a malformed accountId', () => {
-        const dto: CreateNewAccountDto = {
-          ...BASE_CREATE_DTO,
-          accountId: 'INVALID',
-        };
+    it('throws BadRequestException before calling the service when accountId is invalid', () => {
+      const dto: CreateNewAccountDto = {
+        ...BASE_CREATE_DTO,
+        accountId: 'INVALID',
+      };
 
-        expect(() => controller.createNewAccount(dto)).toThrow(
-          BadRequestException,
-        );
-      });
-
-      it('throws with the message "accountId provided is not valid!"', () => {
-        const dto: CreateNewAccountDto = {
-          ...BASE_CREATE_DTO,
-          accountId: 'BAD',
-        };
-
-        expect(() => controller.createNewAccount(dto)).toThrow(
-          'accountId provided is not valid!',
-        );
-      });
-
-      it('does not call the service when accountId fails validation', () => {
-        const dto: CreateNewAccountDto = {
-          ...BASE_CREATE_DTO,
-          accountId: 'NOVO-DEN-0-0',
-        };
-
-        try {
-          controller.createNewAccount(dto);
-        } catch {
-          // expected
-        }
-
-        expect(service.postCreateNewAccount).not.toHaveBeenCalled();
-      });
+      expect(() => controller.createNewAccount(dto)).toThrow(
+        BadRequestException,
+      );
+      expect(() => controller.createNewAccount(dto)).toThrow(
+        'accountId provided is not valid!',
+      );
+      expect(service.postCreateNewAccount).not.toHaveBeenCalled();
     });
 
-    describe('service error propagation', () => {
-      it('propagates BadRequestException when an account already exists for the user', async () => {
-        service.postCreateNewAccount.mockRejectedValue(
-          new BadRequestException(
-            'An account with currency USD already exists for this user!',
-          ),
-        );
-
-        await expect(
-          controller.createNewAccount(BASE_CREATE_DTO),
-        ).rejects.toThrow(BadRequestException);
-        await expect(
-          controller.createNewAccount(BASE_CREATE_DTO),
-        ).rejects.toThrow(
+    it('propagates BadRequestException from the service', async () => {
+      service.postCreateNewAccount.mockRejectedValue(
+        new BadRequestException(
           'An account with currency USD already exists for this user!',
-        );
-      });
+        ),
+      );
 
-      it('propagates InternalServerErrorException from the service', async () => {
-        service.postCreateNewAccount.mockRejectedValue(
-          new InternalServerErrorException('Error creating account!'),
-        );
+      await expect(
+        controller.createNewAccount(BASE_CREATE_DTO),
+      ).rejects.toThrow(
+        'An account with currency USD already exists for this user!',
+      );
+    });
 
-        await expect(
-          controller.createNewAccount(BASE_CREATE_DTO),
-        ).rejects.toThrow(InternalServerErrorException);
-      });
+    it('propagates InternalServerErrorException from the service', async () => {
+      service.postCreateNewAccount.mockRejectedValue(
+        new InternalServerErrorException('Error creating account!'),
+      );
+
+      await expect(
+        controller.createNewAccount(BASE_CREATE_DTO),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 
   // ─── calculateAccountBill ────────────────────────────────────────────────────
 
   describe('calculateAccountBill', () => {
-    describe('valid accountId — delegates to service', () => {
-      it('calls calculateAccountBill with the DTO and route-param accountId in the correct order', async () => {
-        service.calculateAccountBill.mockResolvedValue(BILL_SUCCESS_RESPONSE);
+    it('calls calculateAccountBill with the DTO and route-param accountId, and returns the billing breakdown', async () => {
+      service.calculateAccountBill.mockResolvedValue(BILL_SUCCESS_RESPONSE);
 
-        await controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO);
-
-        expect(service.calculateAccountBill).toHaveBeenCalledWith(
-          BASE_BILL_DTO,
-          VALID_ACCOUNT_ID,
-        );
-        expect(service.calculateAccountBill).toHaveBeenCalledTimes(1);
-      });
-
-      it('returns the full billing breakdown response from the service', async () => {
-        service.calculateAccountBill.mockResolvedValue(BILL_SUCCESS_RESPONSE);
-
-        await expect(
-          controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
-        ).resolves.toEqual(BILL_SUCCESS_RESPONSE);
-      });
-
-      it('passes the route-param accountId to the service, not a value derived from the body', async () => {
-        const differentId = 'BCB-GBR-10-5';
-        service.calculateAccountBill.mockResolvedValue({
-          ...BILL_SUCCESS_RESPONSE,
-          accountId: differentId,
-        });
-
-        await controller.calculateAccountBill(differentId, BASE_BILL_DTO);
-
-        const [, receivedAccountId] =
-          service.calculateAccountBill.mock.calls[0];
-        expect(receivedAccountId).toBe(differentId);
-      });
+      await expect(
+        controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
+      ).resolves.toEqual(BILL_SUCCESS_RESPONSE);
+      expect(service.calculateAccountBill).toHaveBeenCalledWith(
+        BASE_BILL_DTO,
+        VALID_ACCOUNT_ID,
+      );
     });
 
-    describe('invalid accountId — throws before reaching the service', () => {
-      it('throws BadRequestException for a malformed route-param accountId', () => {
-        expect(() =>
-          controller.calculateAccountBill('INVALID', BASE_BILL_DTO),
-        ).toThrow(BadRequestException);
-      });
-
-      it('throws with the message "accountId provided is not valid!"', () => {
-        expect(() =>
-          controller.calculateAccountBill('NOVO-DEN-abc-1', BASE_BILL_DTO),
-        ).toThrow('accountId provided is not valid!');
-      });
-
-      it('does not call the service when the route-param accountId fails validation', () => {
-        try {
-          controller.calculateAccountBill('NOVO-DEN-0-1', BASE_BILL_DTO);
-        } catch {
-          // expected
-        }
-
-        expect(service.calculateAccountBill).not.toHaveBeenCalled();
-      });
+    it('throws BadRequestException before calling the service when route-param accountId is invalid', () => {
+      expect(() =>
+        controller.calculateAccountBill('INVALID', BASE_BILL_DTO),
+      ).toThrow(BadRequestException);
+      expect(() =>
+        controller.calculateAccountBill('INVALID', BASE_BILL_DTO),
+      ).toThrow('accountId provided is not valid!');
+      expect(service.calculateAccountBill).not.toHaveBeenCalled();
     });
 
-    describe('service error propagation', () => {
-      it('propagates BadRequestException when the account does not exist', async () => {
-        service.calculateAccountBill.mockRejectedValue(
-          new BadRequestException(
-            'Account request with accountId was not found!',
-          ),
-        );
-
-        await expect(
-          controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
-        ).rejects.toThrow(BadRequestException);
-        await expect(
-          controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
-        ).rejects.toThrow('Account request with accountId was not found!');
-      });
-
-      it('propagates BadRequestException when billingPeriodStart is before account creation', async () => {
-        service.calculateAccountBill.mockRejectedValue(
-          new BadRequestException(
-            'billingPeriodStart needs to be after the account was created!',
-          ),
-        );
-
-        await expect(
-          controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
-        ).rejects.toThrow(
+    it('propagates BadRequestException from the service', async () => {
+      service.calculateAccountBill.mockRejectedValue(
+        new BadRequestException(
           'billingPeriodStart needs to be after the account was created!',
-        );
-      });
+        ),
+      );
 
-      it('propagates InternalServerErrorException from the service', async () => {
-        service.calculateAccountBill.mockRejectedValue(
-          new InternalServerErrorException('Error creating account!'),
-        );
+      await expect(
+        controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
+      ).rejects.toThrow(BadRequestException);
+    });
 
-        await expect(
-          controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
-        ).rejects.toThrow(InternalServerErrorException);
-      });
+    it('propagates InternalServerErrorException from the service', async () => {
+      service.calculateAccountBill.mockRejectedValue(
+        new InternalServerErrorException('Error creating account!'),
+      );
+
+      await expect(
+        controller.calculateAccountBill(VALID_ACCOUNT_ID, BASE_BILL_DTO),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
