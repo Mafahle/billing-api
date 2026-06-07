@@ -1,0 +1,19 @@
+// Example invoking payload within your controller/worker:
+const baseFee = 1000;
+const discountPercent = 20; // 20% off on special days
+
+// Generate 10 consecutive days starting March 31st at midnight UTC
+const discountDaysUnix = [
+  1774915200, // Tue Mar 31 2026 00:00:00 UTC
+  1775001600, // Wed Apr 01 2026 00:00:00 UTC
+  1775088000, // Thu Apr 02 2026 00:00:00 UTC
+  // ... add remaining 7 days as Unix seconds
+];
+
+const finalBill = billingService.calculateCustomPeriodWithDiscounts(
+  '2026-03-31',
+  '2026-09-10',
+  baseFee,
+  discountPercent,
+  discountDaysUnix
+);

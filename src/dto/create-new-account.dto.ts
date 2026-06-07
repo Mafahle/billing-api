@@ -1,4 +1,4 @@
-import { IsString, IsNumber } from 'class-validator';
+import { IsString, IsNumber, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateNewAccountDto {
@@ -21,6 +21,7 @@ export class CreateNewAccountDto {
     example: 7,
   })
   @IsNumber({}, { message: 'discountedDays must be a valid number.' })
+  @Min(0, { message: 'discountedDays must be greater than or equal to 0.' })
   discountedDays: number;
 
   @ApiProperty({
@@ -28,5 +29,7 @@ export class CreateNewAccountDto {
     example: 10,
   })
   @IsNumber({}, { message: 'discountedDays must be a valid number.' })
+  @Min(0, { message: 'discountedRate must be greater than or equal to 0.' })
+  @Max(100, { message: 'discountedRate must be less than or equal to 100.' })
   discountedRate: number;
 }
